@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>韓語發音練習</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        h1 {
+            color: #333;
+            font-size: 2.7em; /* 제목 크기 90%로 줄임 */
+        }
+        #result {
+            font-size: 8.4em; /* 결과값 크기 70%로 줄임 */
+            margin: 20px;
+            cursor: pointer;
+            background-color: yellow; /* 배경 색깔 노란색 */
+            display: none; /* 처음에 숨김 */
+            padding: 20px; /* 버튼 내부 여백 */
+            border-radius: 10px; /* 둥근 모서리 */
+            width: fit-content; /* 내용에 맞게 너비 조절 */
+            margin-left: auto; /* 가운데 정렬 */
+            margin-right: auto; /* 가운데 정렬 */
+        }
+        button {
+            padding: 21px 42px; /* 버튼 크기 70%로 줄임 */
+            font-size: 2.5em; /* 버튼 글자 크기 70%로 줄임 */
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #instruction {
+            font-size: 1.2em;
+            margin-top: 10px;
+            color: #555;
+            display: none; /* 처음에 숨김 */
+        }
+        #rewordInstruction {
+            font-size: 1.2em;
+            margin-top: 10px;
+            color: #555;
+            display: none; /* 처음에 숨김 */
+        }
+        footer {
+            margin-top: 50px;
+            font-size: 1.5em; /* 하단 텍스트 크기 */
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+<h1>韓語發音練習</h1>
+<button onclick="generateWord()">造字</button>
+<div id="rewordInstruction">(👆點擊「造字」可再造字)</div> <!-- 재생성 안내 메시지 -->
+<div id="result" onclick="playPronunciation()"></div> <!-- 결과 단어 버튼 -->
+<div id="instruction">(👆點擊韓文字母即可聽到發音)</div> <!-- 안내 메시지 -->
+<footer>🇰🇷東禾韓語中心🇰🇷</footer>
+
+<script>
+    // 자음과 모음 리스트
+    const consonants = ['ㄱ', 'ㄴ', 'ㄷ', 'ㄹ', 'ㅁ', 'ㅂ', 'ㅅ', 'ㅇ', 'ㅈ', 'ㅊ', 'ㅋ', 'ㅌ', 'ㅍ', 'ㅎ'];
+    const vowels = ['ㅏ', 'ㅑ', 'ㅓ', 'ㅕ', 'ㅗ', 'ㅛ', 'ㅜ', 'ㅠ', 'ㅡ', 'ㅣ', 'ㅐ', 'ㅒ', 'ㅔ', 'ㅖ', 'ㅘ', 'ㅙ', 'ㅚ', 'ㅝ', 'ㅞ', 'ㅟ', 'ㅢ'];
+
+    // 유니코드를 사용해 자음과 모음을 결합하여 한글 음절 생성
+    function getRandomSyllable() {
+        const consonantIndex = Math.floor(Math.random() * consonants.length);
+        const vowelIndex = Math.floor(Math.random() * vowels.length);
+
+        const consonant = consonants[consonantIndex];
+        const vowel = vowels[vowelIndex];
+
+        // 초성, 중성 결합 후 한글 음절 생성 (받침 없음)
+        const syllable = combineHangul(consonant, vowel);
+        return syllable;
+    }
+
+    // 유니코드를 통해 자음과 모음을 결합하여 음절로 만드는 함수
+    function combineHangul(consonant, vowel) {
+        const chosungBase = 0x1100;  // 초성 유니코드 시작점
+        const jungsungBase = 0x1161; // 중성 유니코드 시작점
+
+        const chosungIndex = consonants.indexOf(consonant);
+        const jungsungIndex = vowels.indexOf(vowel);
+
+        const syllable = String.fromCharCode(0xAC00 + (chosungIndex * 588) + (jungsungIndex * 28));
+        return syllable;
+    }
+
+    // 2음절 단어 생성
+    function generateWord() {
+        const syllable1 = getRandomSyllable();
+        const syllable2 = getRandomSyllable();
+        const word = syllable1 + syllable2;
+        document.getElementById("result").innerText = word;
+
+        // 결과 버튼과 안내 메시지 표시
+        document.getElementById("result").style.display = "block"; // 노란색 버튼 보이기
+        document.getElementById("instruction").style.display = "block"; // 안내 메시지 보이기
+        document.getElementById("rewordInstruction").style.display = "block"; // 재생성 안내 메시지 보이기
+    }
+
+    // 발음 재생 (한 글자씩 떼어서 발음하고 잠깐 쉬기)
+    function playPronunciation() {
+        const word = document.getElementById("result").innerText;
+        const syllable1 = word.charAt(0); // 첫 음절
+        const syllable2 = word.charAt(1); // 두 번째 음절
+
+        // 첫 글자 발음
+        const utterance1 = new SpeechSynthesisUtterance(syllable1);
+        utterance1.lang = 'ko-KR';  // 한국어로 설정
+        utterance1.rate = 0.8;  // 발음 속도를 천천히 설정
+
+        // 두 번째 글자 발음 (약간의 딜레이 추가)
+        const utterance2 = new SpeechSynthesisUtterance(syllable2);
+        utterance2.lang = 'ko-KR';  // 한국어로 설정
+        utterance2.rate = 0.8;  // 발음 속도를 천천히 설정
+
+        // 첫 글자 발음 후 두 번째 글자 발음 (딜레이 0.5초)
+        window.speechSynthesis.speak(utterance1);
+        setTimeout(() => {
+            window.speechSynthesis.speak(utterance2);
+        }, 600);  // 0.6초 대기 후 두 번째 글자 발음
+    }
+</script>
+
+</body>
+</html>
